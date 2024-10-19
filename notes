@@ -1,0 +1,53 @@
+1. NextUI
+   NextUI is a UI library for React that helps you build beautiful and accessible user interfaces. Created on top of Tailwind CSS and React Aria. NextUI's primary goal is to streamline the development process, offering a beautiful and adaptable design for an enhanced user experience.
+
+2. GitHub OAuth Explained
+   The user clicks on the 'Sign Up' button on our app. When this occurs, the user's browser makes a request to our backend server. We're going to realize that the user is trying to sign up to our application. So we're going to redirect the user to Github with our 'client_id', the same client_id we made when making a GitHub OAuth app. Then on GitHub's servers, they're going to receive the user's request, and GitHub is going to present a page to them asking if they're OK sharing information with our app. If so, they get redirected back to our application. When the user gets redirected to the our app, it's going to be redirected to that address we assigned to the OAuth authorization callback URL. This address will have an appended 'code'
+   at the end of it, which our server will take, and make a followup request with to GitHub. This followup request will have our clientId, clientSecret, and that randomly generated code mentioned previously. GitHub is going to validate these three values, and respond with an access_token. We then make another request to GitHub with the access_token to get details about the user - their name, email, etc.
+   In response to that request, GitHub is going to send back the user's profile to us. Once we get this information, the Primsa Adapter is going to take it and automatically create a new User record in the database. That's what's going to store information about the user in our app. After all this, we still need some way to identify this user whenever they make a request to our server. To do so, we send a cookie back to the user's browser, which will be included with all future requests automatically. That cookie tells us who is making a request to our server. All of this will be done between our Next server and GitHub OAuth. The only thing we need to ensure correctly is the authorization callback URL.
+
+3. RECOMMENDED INITIAL DESIGN FOR NEXT.JS APP
+   a. Identify all the different routes you want in your app to have plus the data that each shows
+   b. Make 'path helper' functions. These are functions that return the string to a particular path on your application. This is done so that if we change the name of a particular route on our application, we only have to do it in one place.
+   c. Create your routing folders + page.tsx files based on step a
+   d. identify the places where data changes in your app
+   e. make emtpy server actions for each of those
+   f. Add in comments on what paths you'll need to revalidate for each server action
+
+4. CACHING
+   When we build our application, every single page is determined to be dynamic. This is due to the <Header> component being in our layout.tsx file. This <Header> component uses the auth() function, which will make use of cookies behind the scene. The adjustment made was making a client component within the header that uses the useSession() function.
+
+5. SEARCH QUERIES
+   Search queries are keywords that were queried by the user. They
+   are appended to the URL, thus making them available via the
+   'searchParams' prop. Access to the search query through a client
+   component can be done via the 'useSearchParams' function.
+   NOTE: client components with 'useSearchParams' need be wrapped with
+   'Suspense' or you'll get a strange warning at build time. Also, pages
+   that reference 'searchParams' will be marked as 'dynamic' for purposes of build time caching.
+
+NOTES FOR BULDING YOUR OWN NEXTJS APPS
+
+1. Design your server actions ahead of time
+   (Server Actions are asynchronous functions that are executed on the server. They can be used in Server and Client Components to handle form submissions and data mutations in Next.js applications.)
+2. Build your app every now and then to check your caching status
+   (run the 'npm run build' command)
+3. Wrap slow-loading components with Suspense to enable streaming
+   (The Suspense component is a component that is instantly displayed to the user in place of a component that has to load)
+4. Consider using that query function data fetching pattern
+   (Create a database folder that has a nested folder containing data-loading functions)
+
+NOTES FOR REBUILDING THIS NEXTJS APP (USER STORY + NOTES)
+Header: The header will include the name of the app at the top left corner (Shallow Reddit), a search bar to query post titles, and some content on the right side to display whether the user is signed in or not.
+
+Home Page (/): The top posts are rendered on the left side of the screen (top posts as in posts with the most comments), and the 'Create A Topic' section on the right side of the screen. Included in this section are all current topics in the database. When the user decides to create a topic, a popup modal will appear, prompting the user to fill in the name of the topic, as well as the description. Once the form is validated and the topic is created in the database, the user will be taken to the topic page (/topics/slug) corresponding with that topic. If the user decides to navigate to one of the top posts, the user will be taken to the postId page (/topics/topicSlug/posts/postId), where they will see the topic, the post, and a comment system that allows the user to comment directly to the post, or reply to other comments.
+
+Topic Page (/topics/slug): All posts related to the topic slug will be shown on the left side, with the 'Create A Post' button located on the right side. Selecting that button will open a modal window, prompting the user to fill in the name of the post, as well as the content. Once the post is validated and added to the database, the user will be taken to the postID page mentioned previously.
+
+Here, you can place your production application's keys, and you can setup a `settings-dev.json` to hold your dev keys. Then on Github, you can have your production callback URLs point to your actual domain, and the my-website-dev callback URLs point to your localhost for development.
+
+It takes an extra step in configuration, but in your code, you'll only have to point at `Meteor.settings.private.github.secret`, when referencing your OAuth creds.
+
+When you have both `settings.json` and `settings-dev.json` you can simply run `meteor --settings settings-dev.json` for development and just `meteor` or `meteor run` for production.
+
+Hope this helps!
